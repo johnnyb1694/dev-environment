@@ -5,7 +5,6 @@
     "remoteUser": "node",
     "shutdownAction": "stopCompose",
     "postCreateCommand": "npm install",
-    "forwardPorts": [8080],
 
     // ---- Docker compose properties ----
     "dockerComposeFile": ["../../compose.dev.yml"],
