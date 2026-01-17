@@ -9,14 +9,23 @@ services:
     networks:
       - development-network
     volumes:
-      - ./:/workspace:cached
+      - ./:/project:cached
     environment:
       - CURRENT_ENV=development
-  
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8000:8000"
+    networks:
+      - development-network
+    volumes:
+      - ./:/project:cached
+    environment:
+      - CURRENT_ENV=development
 
 networks:
   development-network:
-    driver: bridge
-
-    
-    
+    driver: bridge 

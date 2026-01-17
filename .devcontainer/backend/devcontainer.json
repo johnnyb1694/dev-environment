@@ -1,22 +1,22 @@
 {
 
     // ---- General properties ----
-    "name": "Dev - Frontend",
-    "remoteUser": "node",
+    "name": "Dev - Backend",
+    "remoteUser": "root",
     "shutdownAction": "stopCompose",
-    "postCreateCommand": "npm install && npm run serve",
+    "postCreateCommand": "pip install -r requirements.txt && uvicorn 'main:app' --host=0.0.0.0 --port=8000",
 
     // ---- Docker compose properties ----
     "dockerComposeFile": ["../../compose.dev.yml"],
-    "service": "frontend",
+    "service": "backend",
     // Note: this must correspond to the volume created in `compose.dev.yml`
-    "workspaceFolder": "/project/frontend", 
+    "workspaceFolder": "/project/backend", 
 
     // ---- Development plugins ----
     "customizations": {
         "vscode": {
             "extensions": [
-                "xabikos.javascriptsnippets"
+                "ms-python.python"
                 // Add more extensions here...
             ],
             "settings": {

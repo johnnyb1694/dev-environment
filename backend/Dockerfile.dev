@@ -1,12 +1,12 @@
-ARG NODE_VERSION=20-slim
+ARG PYTHON_VERSION=3.14.2-slim
 
-FROM node:${NODE_VERSION}
+FROM python:${PYTHON_VERSION}
 
 # Installs relevant development dependencies
 RUN apt-get update && apt-get install -y 
 
-# Expose '8080' inside the compose environment (which we will then map to in our compose file)
-EXPOSE 8080
+# Expose '8000' inside the compose environment (which we will then map to in our compose file)
+EXPOSE 8000
 
 # Set default command (which keeps the container 'open' forever, permitting connection via VS Code)
 CMD ["tail", "-f", "/dev/null"]
