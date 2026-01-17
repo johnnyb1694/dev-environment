@@ -1,0 +1,22 @@
+services:
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports: 
+      - "8080:8080"
+    networks:
+      - development-network
+    volumes:
+      - ./:/workspace:cached
+    environment:
+      - CURRENT_ENV=development
+  
+
+networks:
+  development-network:
+    driver: bridge
+
+    
+    

@@ -1,0 +1,12 @@
+ARG NODE_VERSION=20-slim
+
+FROM node:${NODE_VERSION}
+
+# Installs relevant development dependencies
+RUN apt-get update && apt-get install -y 
+
+# Expose '8080' inside the compose environment (which we will then map to in our compose file)
+EXPOSE 8080
+
+# Set default command for administering the server
+CMD ["sleep", "infinity"]

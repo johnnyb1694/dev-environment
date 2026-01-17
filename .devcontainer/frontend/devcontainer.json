@@ -1,0 +1,35 @@
+{
+
+    // ---- General properties ----
+    "name": "Dev - Frontend",
+    "remoteUser": "node",
+    "shutdownAction": "stopCompose",
+    "postCreateCommand": "npm install",
+    "forwardPorts": [8080],
+
+    // ---- Docker compose properties ----
+    "dockerComposeFile": ["../../compose.dev.yml"],
+    "service": "frontend",
+    // Note: path to a volume mount where the source code can be found in the container
+    "workspaceFolder": "/workspace/frontend", 
+
+    // ---- Development plugins ----
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "xabikos.javascriptsnippets"
+                // Add more extensions here...
+            ],
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "bash"
+                // Add more settings here...
+            }
+        }
+    },
+
+    "features": {
+        "ghcr.io/devcontainers/features/git:1": {},
+        "ghcr.io/devcontainers/features/github-cli:1": {}
+    }
+
+}

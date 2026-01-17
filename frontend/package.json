@@ -1,0 +1,13 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "Template for containerised frontend environment",
+  "scripts": {
+    "serve": "http-server --port=8080"
+  },
+  "author": "Johnny Breen <johnnyb1694@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "http-server": "^14.1.1"
+  }
+}
