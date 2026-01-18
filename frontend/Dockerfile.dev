@@ -6,32 +6,6 @@ FROM node:${NODE_VERSION}
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y git
-    
-# Setup a working directory
-WORKDIR /app
-
-# Setup a default user to 'run as'
-ARG UID=10001
-RUN adduser \
-    --disabled-password \
-    --gecos "" \
-    --home "/nonexistent" \
-    --shell "/sbin/nologin" \
-    --no-create-home \
-    --uid "${UID}" \
-    frontenduser
-
-# Copy dependencies
-COPY package*.json .
-
-# Install dependencies
-RUN npm install
-
-# Copy folder contents
-COPY . .
-
-# Switch to safe user to 'run as'
-USER frontenduser
 
 # Expose '8080' inside the compose environment (which we will then map to in our compose file)
 EXPOSE 8080

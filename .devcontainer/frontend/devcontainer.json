@@ -5,7 +5,7 @@
     "remoteUser": "root",
     "shutdownAction": "none",
     // Note: we need this in the case of node to configure local dependencies for development
-    "postCreateCommand": "npm ci && npm run serve",
+    "postCreateCommand": "npm ci && /bin/sh serve.sh",
     // Note: this ensures that the 'CMD' directive expressed in the Dockerfile
     //      does not get administered (which is desired behaviour for a development environment)
     "overrideCommand": true,

@@ -4,7 +4,7 @@
     "name": "Dev - Backend",
     "remoteUser": "root",
     "shutdownAction": "none",
-    "postCreateCommand": "/bin/sh serve.sh",
+    "postCreateCommand": "pip install -r requirements.txt && /bin/sh serve.sh",
     // Note: this ensures that the 'CMD' directive expressed in the Dockerfile
     //      does not get administered (which is desired behaviour for a development environment)
     "overrideCommand": true,

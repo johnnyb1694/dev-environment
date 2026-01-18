@@ -20,4 +20,4 @@ def index():
 
     :return: dictionary response
     """
-    return {"msg": "Hello, World!!!"}
+    return {"msg": "Hello, World!"}
