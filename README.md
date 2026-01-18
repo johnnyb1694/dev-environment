@@ -6,24 +6,26 @@ This repository is intended to act as a template for other developers who may wi
 the VSCode [development containers extension](https://code.visualstudio.com/docs/devcontainers/containers).
 
 One of the core benefits of this approach is ensuring the reproducibility of your development
-environment which becomes crucial for ensuring efficiency across a team.
+environment which becomes crucial for ensuring efficiency across a multidisciplinary team.
 
-## Structure :hammer_and_wrench:
+### Structure :hammer_and_wrench:
 
 ```
 .
-├── .devcontainer # supplements base infrastructure with developer-specific tooling (e.g. VSCode extensions)
-│   ├── backend
-│   │   └── devcontainer.json
-│   └── frontend
-│       └── devcontainer.json
 ├── backend
-│   ├── Dockerfile.dev # base infrastructure for backend development (e.g. `python`, `pip`, ...)
-│   └── main.py
+│   ├── Dockerfile.dev
+│   ├── Dockerfile.prod
+│   ├── main.py
+│   ├── requirements.txt
+│   └── serve.sh
 ├── compose.dev.yml
 ├── frontend
-│   ├── Dockerfile.dev # base infrastructure for frontend development (e.g. `http-server`, `npm`, ...)
-│   └── index.html
+│   ├── Dockerfile.dev
+│   ├── Dockerfile.prod
+│   ├── index.html
+│   ├── package-lock.json
+│   ├── package.json
+│   └── serve.sh
 └── README.md
 ```
 
@@ -40,9 +42,39 @@ Note that although this setup is highly simplified (i.e. our backend and fronten
 collectively), it is still robust enough to use on any serious development initiative as we are merely
 providing the *canvas*, not the *implementation* (e.g. `React` + `FastAPI` being one approach).
 
-### Further Explanation
+### Development versus Production
 
 Below is a copy of `./backend/Dockerfile.dev` which we will now discuss for illustrative purposes,
+
+```docker
+ARG PYTHON_VERSION=3.14
+
+FROM python:${PYTHON_VERSION}
+
+# Installs relevant development dependencies
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y git
+
+# Expose '8000' inside the compose environment (which we will then map to in our compose file)
+EXPOSE 8000
+
+# NB: when 'overrideCommand = true' in devcontainer.json, this will be ignored
+CMD ["tail", "-f", "/dev/null"]
+```
+
+So, the purpose of `Dockerfile.dev` is to provision a working software environment for developing
+code with Python. In the main, this involves installing Python and git, which are listed above.
+
+Note that we only include `EXPOSE 8000` so that access to port `8000` is permitted from other
+containers on the same network (this is important since we will be using port `8000` to expose
+our FastAPI service in development).
+
+Also, we do not install Python dependencies until the image has been instantiated - installation of 
+dependencies is handled in the `postCreateCommand` which can be found at `.devcontainer/backend/devcontainer.json`.
+You could include this in your image but I've found the above to work well for my purposes.
+
+By contrast, let's look at the production version hosted at `./backend/Dockerfile.prod`,
 
 ```docker
 ARG PYTHON_VERSION=3.14.2-slim
@@ -51,8 +83,7 @@ FROM python:${PYTHON_VERSION}
 
 # Installs relevant development dependencies
 RUN apt-get update && \
-    apt-get upgrade -y && \
-    apt-get install -y git
+    apt-get upgrade -y
 
 # Setup a working directory
 WORKDIR /app
@@ -72,7 +103,7 @@ RUN adduser \
 COPY requirements.txt .
 
 # Install packages
-RUN python -m pip install -r requirements.txt
+RUN python -m pip install --no-cache-dir -r requirements.txt
 
 # Copy the remaining source code
 COPY . .
@@ -83,9 +114,16 @@ USER backenduser
 # Expose '8000' inside the compose environment (which we will then map to in our compose file)
 EXPOSE 8000
 
-# NB: when 'overrideCommand = true' in devcontainer.json, this will be ignored
-CMD ["tail", "-f", "/dev/null"]
+CMD ["/bin/sh", "serve.sh"]
 ```
+
+There are several observable differences here:
+
+* We opt for the 'slim' version of Python to save on space
+* We provision a non-privileged user `backenduser` to run the API service mitigating security risks
+* We disable the `pip` caching feature to save on space
+
+The same idea presented above applies to the frontend configuration.
 
 ## Miscellaneous
 
