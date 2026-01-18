@@ -3,8 +3,11 @@
     // ---- General properties ----
     "name": "Dev - Backend",
     "remoteUser": "root",
-    "shutdownAction": "stopCompose",
-    "postCreateCommand": "pip install -r requirements.txt && uvicorn 'main:app' --host=0.0.0.0 --port=8000",
+    "shutdownAction": "none",
+    "postCreateCommand": "/bin/sh serve.sh",
+    // Note: this ensures that the 'CMD' directive expressed in the Dockerfile
+    //      does not get administered (which is desired behaviour for a development environment)
+    "overrideCommand": true,
 
     // ---- Docker compose properties ----
     "dockerComposeFile": ["../../compose.dev.yml"],
@@ -16,14 +19,30 @@
     "customizations": {
         "vscode": {
             "extensions": [
-                "ms-python.python"
-                // Add more extensions here...
+                // Essentials
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "ms-python.black-formatter",
+                "ms-python.isort",
+                "ms-python.flake8",
+                "ms-python.mypy-type-checker",
+                
+                // Documentation and productivity
+                "njpwerner.autodocstring",
+                "kevinrose.vsc-python-indent",
+                
+                // Development tools
+                "eamodio.gitlens",
+                "ms-azuretools.vscode-docker",
+                
+                // Code quality
+                "charliermarsh.ruff",
+                "ms-python.pytest"
             ],
             "settings": {
                 // Note: this ensures that the '/frontend' folder is tracker in version control
                 "git.openRepositoryInParentFolders": "always",
                 "terminal.integrated.defaultProfile.linux": "bash"
-                // Add more settings here...
             }
         }
     },

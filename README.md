@@ -36,6 +36,13 @@ Note that although this setup is highly simplified (i.e. our backend and fronten
 collectively), it is still robust enough to use on any serious development initiative as we are merely
 providing the *canvas*, not the *implementation* (e.g. `React` + `FastAPI` being one approach).
 
-## Frontend - Notes
+## Notes
 
 * Note that `npm` is a *package manager* service (whereas `npx` is a tool to *execute* packages)
+* 'CORS' is what is known as 'Cross-Origin Resource Sharing' (or 'CORS' for short) and it is a browser
+security rule,
+    * Browsers consider two URLs to be from 'different origins' (i.e. representing different entities)
+    if either the protocol, domain or port differ
+    * In our case, `localhost:8000` and `localhost:8080` are from different origins since the port number differs
+    * The browser acts as a 'security officer' of sorts, by default, by stipulating that any resources that are requested from 'outside origins' be
+    stamped with an explicit header (`Access-Control-Allow-Origin`) that permits contact with said origins

@@ -2,9 +2,13 @@
 
     // ---- General properties ----
     "name": "Dev - Frontend",
-    "remoteUser": "node",
-    "shutdownAction": "stopCompose",
-    "postCreateCommand": "npm install && npm run serve",
+    "remoteUser": "root",
+    "shutdownAction": "none",
+    // Note: we need this in the case of node to configure local dependencies for development
+    "postCreateCommand": "npm ci && npm run serve",
+    // Note: this ensures that the 'CMD' directive expressed in the Dockerfile
+    //      does not get administered (which is desired behaviour for a development environment)
+    "overrideCommand": true,
 
     // ---- Docker compose properties ----
     "dockerComposeFile": ["../../compose.dev.yml"],
@@ -17,13 +21,11 @@
         "vscode": {
             "extensions": [
                 "xabikos.javascriptsnippets"
-                // Add more extensions here...
             ],
             "settings": {
                 // Note: this ensures that the '/frontend' folder is tracker in version control
                 "git.openRepositoryInParentFolders": "always",
                 "terminal.integrated.defaultProfile.linux": "bash"
-                // Add more settings here...
             }
         }
     },

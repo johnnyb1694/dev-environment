@@ -10,6 +10,7 @@ services:
       - development-network
     volumes:
       - ./:/project:cached
+      - frontend-dependency-cache:/project/frontend/node_modules
     environment:
       - CURRENT_ENV=development
 
@@ -23,8 +24,15 @@ services:
       - development-network
     volumes:
       - ./:/project:cached
+      - backend-dependency-cache:/root/.cache/pip
     environment:
       - CURRENT_ENV=development
+
+volumes:
+  frontend-dependency-cache:
+    driver: local
+  backend-dependency-cache:
+    driver: local
 
 networks:
   development-network:

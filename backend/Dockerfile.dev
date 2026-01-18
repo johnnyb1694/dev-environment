@@ -3,10 +3,38 @@ ARG PYTHON_VERSION=3.14.2-slim
 FROM python:${PYTHON_VERSION}
 
 # Installs relevant development dependencies
-RUN apt-get update && apt-get install -y 
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y git
+
+# Setup a working directory
+WORKDIR /app
+
+# Setup a default user to 'run as'
+ARG UID=10001
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    backenduser
+
+# Copy requirements file
+COPY requirements.txt .
+
+# Install packages
+RUN python -m pip install -r requirements.txt
+
+# Copy the remaining source code
+COPY . .
+
+# Switch to safer 'run as' user
+USER backenduser
 
 # Expose '8000' inside the compose environment (which we will then map to in our compose file)
 EXPOSE 8000
 
-# Set default command (which keeps the container 'open' forever, permitting connection via VS Code)
+# NB: when 'overrideCommand = true' in devcontainer.json, this will be ignored
 CMD ["tail", "-f", "/dev/null"]
