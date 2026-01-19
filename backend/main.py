@@ -16,8 +16,7 @@ app.add_middleware(
 
 @app.get("/")
 def index():
-    """Test page
-
-    :return: dictionary response
+    """
+    Sample endpoint
     """
     return {"msg": "Hello, World!"}
