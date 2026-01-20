@@ -5,7 +5,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.dev
     ports: 
-      - "8080:8080"
+      - 8080:8080
     networks:
       - development-network
     volumes:
@@ -19,7 +19,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile.dev
     ports:
-      - "8000:8000"
+      - 8000:8000
     networks:
       - development-network
     volumes:
@@ -28,11 +28,56 @@ services:
     environment:
       - CURRENT_ENV=development
 
+  db:
+    image: postgres
+    restart: always
+    user: postgres
+    networks:
+      - development-network
+    secrets:
+      - db-password
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=backend
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
+    expose:
+      - 5432
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  db_admin:
+    image: dpage/pgadmin4
+    restart: always
+    networks:
+      - development-network
+    secrets:
+      - db-admin-password
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=johnnyb1694@gmail.com
+      - PGADMIN_DEFAULT_PASSWORD_FILE=/run/secrets/db-admin-password
+    ports:
+      - 8888:80
+    volumes:
+      - db-admin-data:/var/lib/pgadmin
+    depends_on:
+      db:
+        condition: service_healthy
+
+secrets:
+  db-password:
+    file: db/secrets/password.txt
+  db-admin-password:
+    file: db/secrets/password-admin.txt
+
 volumes:
+  db-data:
+  db-admin-data:
   frontend-dependency-cache:
-    driver: local
   backend-dependency-cache:
-    driver: local
 
 networks:
   development-network:
