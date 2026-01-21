@@ -23,8 +23,12 @@ services:
     networks:
       - development-network
     volumes:
+      # Bind mount for reflective code changes
       - ./:/project:cached
-      - backend-dependency-cache:/root/.cache/pip
+      # Anonymous volume so that '.venv' is ignored from build
+      - /project/backend/.venv
+      # Cache for uv dependencies
+      - backend-dependency-cache:/root/.cache/uv
     environment:
       - CURRENT_ENV=development
 

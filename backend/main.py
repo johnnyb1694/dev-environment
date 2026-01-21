@@ -17,6 +17,6 @@ app.add_middleware(
 @app.get("/")
 def index():
     """
-    Sample endpoint
+    Sample endpoint - XYZ
     """
     return {"msg": "Hello, World!"}

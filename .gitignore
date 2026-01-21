@@ -2,6 +2,7 @@
 node_modules/
 
 # Python
+.venv/
 venv/
 __pycache__/
 .mypy_cache/

@@ -4,7 +4,7 @@
     "name": "Dev - Backend",
     "remoteUser": "root",
     "shutdownAction": "none",
-    "postCreateCommand": "/bin/sh serve.sh",
+    "postCreateCommand": "./serve.sh",
     // Note: this ensures that the 'CMD' directive expressed in the Dockerfile
     //      does not get administered (which is desired behaviour for a development environment)
     "overrideCommand": true,
@@ -42,7 +42,10 @@
             "settings": {
                 // Note: this ensures that the '/frontend' folder is tracker in version control
                 "git.openRepositoryInParentFolders": "always",
-                "terminal.integrated.defaultProfile.linux": "bash"
+                "terminal.integrated.defaultProfile.linux": "bash",
+                "python.defaultInterpreterPath": "/project/backend/.venv/bin/python", 
+                // Note: unnecessary since this is specified in the Dockerfile already
+                "python.terminal.activateEnvironment": false
             }
         }
     },
