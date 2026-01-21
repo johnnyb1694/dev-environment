@@ -16,9 +16,15 @@ environment which becomes crucial for ensuring efficiency across a multidiscipli
 │   ├── Dockerfile.dev
 │   ├── Dockerfile.prod
 │   ├── main.py
-│   ├── requirements.txt
-│   └── serve.sh
+│   ├── pyproject.toml
+│   ├── README.md
+│   ├── serve.sh
+│   └── uv.lock
 ├── compose.dev.yml
+├── db
+│   └── secrets
+│       ├── password-admin.txt
+│       └── password.txt
 ├── frontend
 │   ├── Dockerfile.dev
 │   ├── Dockerfile.prod
