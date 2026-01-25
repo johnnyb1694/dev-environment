@@ -53,14 +53,38 @@ providing the *canvas*, not the *implementation* (e.g. `React` + `FastAPI` being
 Below is a copy of `./backend/Dockerfile.dev` which we will now discuss for illustrative purposes,
 
 ```docker
-ARG PYTHON_VERSION=3.14
+ARG PYTHON_VERSION=python3.14-bookworm-slim
 
-FROM python:${PYTHON_VERSION}
+FROM ghcr.io/astral-sh/uv:${PYTHON_VERSION}
 
 # Installs relevant development dependencies
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y git
+
+# This enforces hard downloads of packages (rather than symlinks) as subsequent container builds
+# can sometimes point to deprecated paths (so this is necessary)
+# NB: a backend dependency cache is still maintained in the Docker Compose file
+ENV UV_LINK_MODE=copy
+
+# Run subsequent filesystem commands relative to this path
+WORKDIR /project/backend
+
+# Install the project's dependencies using the lockfile and settings
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --locked --no-install-project
+
+# Then, add the rest of the project source code and install it
+# Installing separately from its dependencies allows optimal layer caching
+COPY . /project/backend
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked
+
+# Place executables in the environment at the front of the path
+ENV PATH="/project/backend/.venv/bin:$PATH"
 
 # Expose '8000' inside the compose environment (which we will then map to in our compose file)
 EXPOSE 8000
@@ -76,16 +100,12 @@ Note that we only include `EXPOSE 8000` so that access to port `8000` is permitt
 containers on the same network (this is important since we will be using port `8000` to expose
 our FastAPI service in development).
 
-Also, we do not install Python dependencies until the image has been instantiated - installation of 
-dependencies is handled in the `postCreateCommand` which can be found at `.devcontainer/backend/devcontainer.json`.
-You could include this in your image but I've found the above to work well for my purposes.
-
 By contrast, let's look at the production version hosted at `./backend/Dockerfile.prod`,
 
 ```docker
-ARG PYTHON_VERSION=3.14.2-slim
+ARG PYTHON_VERSION=python3.14-bookworm-slim
 
-FROM python:${PYTHON_VERSION}
+FROM ghcr.io/astral-sh/uv:${PYTHON_VERSION}
 
 # Installs relevant development dependencies
 RUN apt-get update && \
@@ -105,14 +125,32 @@ RUN adduser \
     --uid "${UID}" \
     backenduser
 
-# Copy requirements file
-COPY requirements.txt .
+# Enable bytecode compilation
+ENV UV_COMPILE_BYTECODE=1
 
-# Install packages
-RUN python -m pip install --no-cache-dir -r requirements.txt
+# Copy from the cache instead of linking since it's a mounted volume
+ENV UV_LINK_MODE=copy
 
-# Copy the remaining source code
-COPY . .
+# Omit development dependencies
+ENV UV_NO_DEV=1
+
+# Ensure installed tools can be executed out of the box
+ENV UV_TOOL_BIN_DIR=/usr/local/bin
+
+# Install the project's dependencies using the lockfile and settings
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --locked --no-install-project --no-dev
+
+# Then, add the rest of the project source code and install it
+# Installing separately from its dependencies allows optimal layer caching
+COPY . /app
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked --no-dev
+
+# Place executables in the environment at the front of the path
+ENV PATH="/app/.venv/bin:$PATH"
 
 # Switch to safer 'run as' user
 USER backenduser
@@ -120,6 +158,7 @@ USER backenduser
 # Expose '8000' inside the compose environment (which we will then map to in our compose file)
 EXPOSE 8000
 
+# NB: when 'overrideCommand = true' in devcontainer.json, this will be ignored
 CMD ["/bin/sh", "serve.sh"]
 ```
 
