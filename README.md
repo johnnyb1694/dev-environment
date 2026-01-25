@@ -147,3 +147,151 @@ stamped with an explicit header (`Access-Control-Allow-Origin`) that permits con
 Note that CORS is implemented in our `FastAPI` backend via the logic outlined in `./backend/main.py`.
 
 Without it, there would be no way to access the backend from our frontend via the host's browser.
+
+### Using `uv`
+
+`uv` is a lightning-fast package management system implemented in Rust.
+
+It is used in this project to configure the `./backend` service. 
+
+#### Key Commands
+
+1. To initialise a project, you type,
+
+    ```sh
+    uv init
+    ```
+
+    This will create a 'project' by default but if you want to create a 'Python package' or general 
+    'System library', arguments can be provided to do that (`--package {NAME}` and `--lib {NAME}` respectively)
+
+    As a general rule,
+
+    * *Projects* are more suitable for web servers, scripts and CLIs
+    * *Packages* are most suitable when building distributable *Python* packages (e.g. a CLI that will
+    need to be published to 'PyPI' or some kind of 'Nexus' proxy). In this instance, a `src` directory
+    is created and a 'package' folder is nested within for further development. In addition, a 'build
+    system' will be defined so that the project can be installed into the local environment (this defaults
+    to `uv_build`). Remember that when we say 'build' we typically are referring to the process of creating
+    source archives called 'sdists' or 'wheels' that may contain binary modules from a compiled language
+    (e.g. C++). Remember that the Python interpreter *does* compile source code to byte code at runtime,
+    as much as necessary (this is why `__pycache__` folders exist). Build systems typically deal with 
+    compilation in this sense as well
+    * *Libraries* are very similar to packages but are not necessarily Python-specific
+
+2. To run Python scripts (e.g. `main.py`) in the context of the local `.venv/` folder you type,
+
+    ```sh
+    uv run main.py
+    ```
+
+    Note that whenever you `run` something (as above), the project is 'locked' and 'synced' before
+    invoking the requested command, which ensures that the prject is always up-to-date.
+
+    To disable some of these actions, consider the following alternatives,
+
+    ```sh
+    # Run a command *and* disable automatic logging of dependencies to lock file
+    # i.e. this will not try to update the lock file (but it will match `uv.lock` and `pyproject.toml`)
+    uv run --locked main.py
+
+    # Run a command *and* use the lock file without checking if it is up-to-date
+    # i.e. this will not try to update the lock file (*and* it will not bother matching `uv.lock` and `pyproject.toml`)
+    uv run --frozen main.py
+
+    # Run a command *and* do not check whether the virtual environment is up-to-date
+    # i.e. this will run with whatever is stored in `.venv/`
+    uv run --no-sync main.py
+    ```
+
+3. To add a new dependency 'foo' (i.e. install the dependency into `.venv/` and register it to `pyproject.toml` & `uv.lock`),
+
+    ```sh
+    uv add foo
+    ```
+    
+    When this action is administered, a new entry will be added to the `project.dependencies` field
+    of `pyproject.toml`
+
+    If you want to simply add a 'development' dependency (e.g. `pytest`), you'd type,
+
+    ```sh
+    uv add --dev pytest
+    ``` 
+
+    If you want to simply add an 'optional' dependency (e.g. `excel` is treated as an extra for `pandas`),
+
+    ```sh
+    uv add openpyxl --optional excel
+    ```
+
+    This will create a named list entry in `project.optional-dependencies` with an entry for `openpyxl`
+    under the name `excel`.
+
+    You can add dependencies from a different source to 'PyPI' (e.g. from GitHub) with the following syntax,
+
+    ```sh
+    uv add "httpx @ git+https://github.com/encode/httpx" --branch main
+    ```
+
+    If this action is performed an additional entry will be appended to `project.tool.uv.sources`. The sources
+    supported by `uv` are numerous:
+
+    * Index: a package resolved from an index such as PyPI (the default)
+    * Git: a git repository
+    * URL: a remote wheel or source distribution
+    * Path: a local wheel, source distribution or project directory
+    * Workspace: a member of the current workspace
+
+4. To remove an existing dependency 'foo', simply type,
+
+    ```sh
+    uv remove foo
+    ```
+
+5. To sync a new project with an existing lock file (e.g. you're a new developer),
+
+    ```sh
+    uv sync --locked # NB: do not update `uv.lock` by default (but *do* sync the existing lock file with `pyproject.toml`)
+    ```
+
+6. To upgrade all of the Python packages within a given project, you can run,
+
+    ```sh
+    uv lock --upgrade
+    ```
+
+#### Locking & Syncing
+
+We need to first distinguish between 'lock' and 'sync':
+
+* Locking: is the process of resolving your project's dependencies into a lockfile - if you want to 
+disable automatic locking, you can always use the `--locked` option on relevant commands
+* Syncing: is the process of installing a subset of packages from the lockfile into the project environment
+
+Note that a lock file is considered 'out of date' if any of the following are true,
+
+* You manually add a dependency to `pyproject.toml`
+* You change the version constraints for a dependency in such a way that the currently locked
+version is now excluded (e.g. imagine you have `pandas==3.4.1` but you change the condition to `pandas>3.4.1`)
+
+You can always check whether the lock file is up-to-date with the command,
+
+```sh
+uv lock --check
+```
+
+#### Key Files
+
+When you initialise a repository with `uv`, it will create a `.venv/` folder which acts as a 
+virtual environment for your project (this will be automatically excluded from git via `.gitignore`).
+
+Important files that are created & manager by `uv` include,
+
+* `pyproject.toml`: this encodes metadata about your Python application - it specifies the 'broad'
+requirements of your project. Please note that the `project.dependencies` field in this file is used
+when uploading to PyPI or building a wheel (i.e. it is framed from the client's perspective rather
+than the developer's perspective which is what `uv.lock` entails)
+* `uv.lock`: this is more detailed than `pyproject.toml` and contains information on *where* each 
+package can be sourced from (i.e. the source `url` for the distributable bundle) along with the
+full dependency tree associated with each package (i.e. the dependencies of your dependencies)
